@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do</title>
+
+    <style>
+        #sign{
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div id="body"></div>
+
+    <script>
+        checkToken()
+
+        function preventRefresh(e){
+e.preventDefault()
+        }
+
+        function checkToken(){
+            if(!localStorage.getItem("token")){
+                showSignUpDiv()
+                if(document.getElementById("todoDiv")){
+                    document.getElementById("todoDiv").remove()
+                }
+        }else{
+            if(document.getElementById("signDiv")){
+                document.getElementById("signDiv").remove()
+            }
+            showTodoDiv()
+        }
+        }
+        
+        function showSignUpDiv(){
+
+          const signDiv = document.createElement("div")
+          signDiv.setAttribute("id","signDiv")
+
+          const signForm = document.createElement("form")
+          signForm.setAttribute("id","signForm")
+          signForm.setAttribute("onsubmit","preventRefresh()")
+
+          const fullNameInput = document.createElement("input")
+          fullNameInput.setAttribute("id","fullName")
+          fullNameInput.setAttribute("type","text")
+          fullNameInput.setAttribute("placeholder","Full Name")
+
+          const usernameInput = document.createElement("input")
+          usernameInput.setAttribute("id","username")
+          usernameInput.setAttribute("type","text")
+          usernameInput.setAttribute("placeholder","username")
+
+          const passwordInput = document.createElement("input")
+          passwordInput.setAttribute("id","password")
+          passwordInput.setAttribute("type","text")
+          passwordInput.setAttribute("placeholder","password")
+
+          const userExists = document.createElement("p")
+          userExists.innerHTML = "Already a user? Sign In Now"
+          userExists.setAttribute("id","userExists")
+          userExists.setAttribute("onclick","userExists()")
+
+          const signBtn = document.createElement("button")
+          signBtn.innerText = "Sign Up"
+          signBtn.setAttribute("onclick","handleSignup()")
+          signBtn.setAttribute("id","signBtn")
+          signBtn.setAttribute("type","submit")
+
+          
+        //   const signInBtn = document.createElement("button")
+        //   signInBtn.innerText = "Sign In"
+        //   signInBtn.setAttribute("onclick","handleSignin()")
+        //   signInBtn.setAttribute("onclick","handleSignin(asas)")
+
+          signForm.appendChild(fullNameInput)
+          signForm.appendChild(usernameInput)
+          signForm.appendChild(passwordInput)
+          signForm.appendChild(userExists)
+          signForm.appendChild(signBtn)
+
+          signDiv.appendChild(signForm)
+
+          const body = document.getElementById("body")
+          body.appendChild(signDiv)
+
+          console.log(signDiv)
+        }
+
+        function userExists(){
+            document.getElementById("signBtn").setAttribute("onclick" , "handleSignin()")
+            document.getElementById("signBtn").innerHTML = "Sign In"
+            document.getElementById("userExists").innerHTML = "Don't have an Account? Sign Up Now"
+            document.getElementById("userExists").setAttribute("onclick", "userDontExists()")
+            document.getElementById("fullName").remove()
+        }
+
+        function userDontExists(){
+            document.getElementById("signBtn").setAttribute("onclick" , "handleSignup()")
+            document.getElementById("signBtn").innerHTML = "Sign Up"
+
+            const fullNameInput = document.createElement("input")
+            fullNameInput.setAttribute("id","fullName")     
+            fullNameInput.setAttribute("type","text")
+            fullNameInput.setAttribute("placeholder","Full Name")
+            document.getElementById("signDiv").insertAdjacentElement("afterbegin", fullNameInput)
+
+            document.getElementById("userExists").innerHTML = "Already a user? Sign In Now"
+            document.getElementById("userExists").setAttribute("onclick", "userExists()")
+        }
+
+        const handleSignup = async (event) => {
+            event.preventDefault();
+    const fullName = document.getElementById("fullName");
+    const username = document.getElementById("username");
+    const password = document.getElementById("password");
+
+    console.log({ fullName, username, password });
+    
+    try {
+        const response = await fetch("http://localhost:3000/signup", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ fullName:fullName.value, username:username.value, password:password.value }),
+        });
+        const data = await response.json();
+
+        if(data.signupSuccessfull){
+            document.getElementById("signBtn").setAttribute("onclick" , "handleSignin()")
+        document.getElementById("signBtn").innerHTML = "Sign In"
+        fullName.remove()
+        }else{
+            alert(data.message)
+        }
+
+        
+
+        console.log(data);
+    } catch (err) {
+        console.log(err);
+    }
+};
+
+        const handleSignin = async () => {
+                    const username = document.getElementById("username").value;
+                    const password = document.getElementById("password").value;
+                   
+                    try {
+                        const response = await fetch("http://localhost:3000/signin", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ username: username, password: password })
+                        });
+                        const data = await response.json();
+                        console.log(data);
+                        localStorage.setItem("token", data.token);
+                        checkToken()
+                        
+                        
+            
+                    } catch (err) {
+                        console.log(err);
+                    }
+                };
+    
+        function handleLogout(){
+            localStorage.removeItem("token")
+            if(!localStorage.getItem("token")){
+                checkToken()
+            }else{
+                return
+            }
+            
+        }
+    
+        function showTodoDiv(){
+            const todoDiv = document.createElement("div")
+            todoDiv.setAttribute("id","todoDiv")
+
+            const nav = document.createElement("div")
+            nav.setAttribute("id","nav")
+
+            const name = document.createElement("p")
+            name.setAttribute("id","name")
+            name.innerHTML = "fullName"
+
+            const logoutBtn = document.createElement("button")
+            logoutBtn.innerText = "Logout"
+            logoutBtn.setAttribute("onclick","handleLogout()")
+            logoutBtn.setAttribute("id","logoutBtn")
+
+            nav.appendChild(name)
+            nav.appendChild(logoutBtn)
+
+          const todoBody = document.createElement("div")
+          todoBody.setAttribute("id","todoBody")
+
+
+          const todoInput = document.createElement("input")
+          todoInput.setAttribute("id","todoInput")
+          todoInput.setAttribute("type","text")
+          todoInput.setAttribute("placeholder","type your Todo")
+
+          const addTodoBtn = document.createElement("button")
+          addTodoBtn.innerText = "Add Todo"
+          addTodoBtn.setAttribute("onclick","handleAddTodo()")
+          addTodoBtn.setAttribute("id","addTodoBtn")
+
+          todoBody.appendChild(todoInput)
+          todoBody.appendChild(addTodoBtn)
+
+          todoDiv.appendChild(nav)
+          todoDiv.appendChild(todoBody)
+          
+        
+
+          const body = document.getElementById("body")
+          body.appendChild(todoDiv)
+
+        //   console.log(signDiv)
+        }
+    
+    </script>
+
+
+
+
+    
+</body>
+</html>
+
+<!-- <script>
+        const signDiv = document.getElementById("sign");
+        let fullName = document.getElementById("fullName");
+        let username = document.getElementById("username");
+        let password = document.getElementById("password");
+        const todoInput = document.getElementById("todoInput");
+        const todoList = document.getElementById("todoList");
+        const addTodoContainer = document.getElementById("addTodoContainer");
+    
+        let currentUser = "";
+    
+        let token = localStorage.getItem("token");
+    
+        if (token) {
+            currentUser = localStorage.getItem("username");
+            signDiv.innerHTML = "";
+            addTodoContainer.innerHTML = `<input id="todoInput" type="text">
+            <button onclick="handleAddTodo()">Add Todo</button>`;
+            todoList.innerHTML = `<h1>Username : ${currentUser}</h1>`;
+        } else {
+            signDiv.innerHTML = ` <input id="fullName" placeholder="Full Name" type="text"> <input id="username" placeholder="username" type="text">
+            <input id="password" placeholder="password" type="text">
+            <button onclick="handleSignup()">Sign up</button>
+            <button onclick="handleSignin()">Sign In</button>`;
+
+            fullName = document.getElementById("fullName");
+    
+            username = document.getElementById("username");
+            password = document.getElementById("password");
+         }
+    
+        const handleSignup = async () => {
+            console.log(password.value )
+            try {
+                const response = await fetch("http://localhost:3000/signup", {
+                    method: 'POST',
+                    body: JSON.stringify({fullName:fullName.value, username: username.value, password: password.value })
+                });
+                const data = await response.json();
+                console.log(data);
+            } catch (err) {
+                console.log(err);
+            }
+        };
+    
+        const handleSignin = async () => {
+            try {
+                const response = await fetch("http://localhost:3000/signin", {
+                    method: 'POST',
+                    body: JSON.stringify({ username: username.value, password: password.value })
+                });
+                const data = await response.json();
+                console.log(data);
+                localStorage.setItem("token", data.token);
+                currentUser = username.value;
+                localStorage.setItem("username", currentUser);
+    
+                signDiv.innerHTML = "";
+                addTodoContainer.innerHTML = `<input id="todoInput" type="text">
+                <button onclick="handleAddTodo()">Add Todo</button>`;
+                todoList.innerHTML = `<h1>Username : ${currentUser}</h1>`;
+    
+            } catch (err) {
+                console.log(err);
+            }
+        };
+    
+        const handleLogout = () => {
+            localStorage.removeItem("token");
+            localStorage.removeItem("username");
+            signDiv.innerHTML = `<input id="username" placeholder="username" type="text">
+            <input id="password" placeholder="password" type="text">
+            <button onclick="handleSignup()">Sign up</button>
+            <button onclick="handleSignin()">Sign In</button>`;
+    
+            addTodoContainer.innerHTML = "";
+    
+            username = document.getElementById("username");
+            password = document.getElementById("password");
+        };
+    
+        const handleAddTodo = async () => {
+            try {
+                const response = await fetch("http://localhost:3000/addtodo", {
+                    method: 'POST',
+                    body: JSON.stringify({ username: currentUser, todo: document.getElementById("todoInput").value })
+                });
+                const data = await response.json();
+                const todos = data.todos.map((todo) => {
+                    return `<h3>${todo}</h3>`;
+                });
+                todoList.innerHTML = `<h1>Username : ${currentUser}</h1>` + todos.join("");
+            } catch (err) {
+                console.log(err);
+            }
+        };
+    </script> -->
+    
+        
+    
+
+
+    <!-- <script>
+        const signDiv = document.getElementById("sign")
+        let username= document.getElementById("username")
+        let password= document.getElementById("password")
+        const todoInput = document.getElementById("todoInput")
+        const todoList = document.getElementById("todoList")
+        const addTodoContainer = document.getElementById("addTodoContainer")
+        const todosContainer = document.getElementById("todosContainer")
+
+       let currentUser = ""
+        
+        
+
+        let token = localStorage.getItem("token")
+
+        if (token) {
+            signDiv.innerHTML = ""
+            todoList.innerHTML = `<h1>Username : ${currentUser}</h1>`
+                
+        }else{
+            signDiv.innerHTML = `<input class="username" placeholder="username" type="text">
+            <input class="password" placeholder="password" type="text">
+            <button onclick="handleSignup()">Sign up</button>
+            <button onclick="handleSignin()">Sign In</button>`
+
+            username = document.getElementById("username");
+password = document.getElementById("password");
+        }
+
+        
+        
+
+        const handleSignup = async ()=>{
+            try {
+                const response = await fetch("http://localhost:3000/signup",{
+                method: 'POST', // Specify the request method
+                
+                body: JSON.stringify({username:username.value,password:password.value}) // Convert the data to a JSON string
+} )   
+                const data = await response.json()
+                console.log(data)
+            } catch (err) {
+                console.log(err)
+            }         
+        }
+        const handleSignin = async()=>{
+            console.log(username.value)
+            try {
+                const response = await fetch("http://localhost:3000/signin",{
+                method: 'POST', // Specify the request method
+                
+                body: JSON.stringify({username:username.value,password:password.value}) // Convert the data to a JSON string
+} )   
+                const data = await response.json()
+                console.log(data)
+                localStorage.setItem("token",data.token)
+                console.log(username.value)
+                currentUser = username.value
+                console.log(currentUser)
+
+                signDiv.innerHTML = ""
+                addTodoContainer.innerHTML = `<input id="todoInput" type="text">
+                <button onclick="handleAddTodo()">Add Todo</button>`
+                
+                
+                
+            } catch (err) {
+                console.log(err)
+            }
+             token = localStorage.getItem("token")
+            console.log(token)
+
+            // if(token){
+            //     sign.classList.add("hidden")
+            // }else{
+            //     sign.classList.remove("hidden")
+            // }
+        }
+        
+        const handleLogout = ()=>{
+            localStorage.removeItem("token")
+            signDiv.innerHTML = `<input class="username" placeholder="username" type="text">
+            <input class="password" placeholder="password" type="text">
+            <button onclick="handleSignup()">Sign up</button>
+            <button onclick="handleSignin()">Sign In</button>`
+
+            username = document.getElementById("username");
+password = document.getElementById("password");
+
+            addTodoContainer.innerHTML = ""
+            
+        }
+
+        const handleAddTodo = async()=>{
+
+            console.log("handleAddTodocalled")
+
+            console.log(document.getElementById("todoInput"))
+            try {
+                const response = await fetch("http://localhost:3000/addtodo",{
+                method: 'POST', // Specify the request method
+                
+                
+                body: JSON.stringify({username:currentUser,todo:document.getElementById("todoInput").value}) // Convert the data to a JSON string
+                } )   
+
+                const data = await response.json()
+console.log(data)
+              const todos =  data.todos.map((todo)=>{
+                    return `<h3>${todo}</h3>`
+                })
+console.log(todos)
+                todoList.innerHTML = "<h1>Username : ${username}</h1>" + todos.join("")
+                
+                
+            } catch (err) {
+                console.log(err)
+            }
+
+
+
+
+
+        }
+        
+    </script> -->
