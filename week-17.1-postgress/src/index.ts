@@ -5,9 +5,7 @@ const app = express();
 
 app.use(express.json());
 
-const client = new Client(
-  "postgresql://neondb_owner:9MmKlC2SURJj@ep-restless-math-a1i2svps.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
-);
+const client = new Client("");
 
 app.get("/", (req: Request, res: Response) => {
   res.json({ message: "server is alive" });
